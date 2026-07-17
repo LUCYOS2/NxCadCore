@@ -2,9 +2,8 @@
 
 NX 북마크(.plmxml) 오픈 + Assembly Tree/요약 Geometry/Material 읽기를 담당하는 공유 모듈.
 원래 [TV_BitSam](https://github.com/LUCYOS2/TV_BitSam) 프로젝트의 `CadImportModule`+`Shared`로
-시작했으며, [NX_CrossCompare](https://github.com/LUCYOS2/NX-CrossCompare)에서도 동일한
-"NX 구조 진입" 단계가 필요해 별도 공유 저장소로 분리했다. 두 프로젝트 모두 git submodule로
-참조한다 (경로: `external/NxCadCore`).
+시작했으며, 동일한 "NX 구조 진입" 단계가 필요한 다른 프로젝트에서도 재사용하기 위해 별도
+공유 저장소로 분리했다. 소비 프로젝트는 git submodule로 참조한다 (경로: `external/NxCadCore`).
 
 ## 구조
 

@@ -1,6 +1,6 @@
 # CMake 빌드 정의. Core.vcxproj(MSBuild, TV_BitSam용)와 별개로, CMake 기반
-# 소비 프로젝트(NX_CrossCompare 등)를 위해 추가했다. 파일 목록은 Core.vcxproj와
-# 동일하게 유지할 것 - 한쪽에 파일을 추가하면 다른 쪽도 같이 갱신 필요.
+# 소비 프로젝트를 위해 추가했다. 파일 목록은 Core.vcxproj와 동일하게 유지할 것 -
+# 한쪽에 파일을 추가하면 다른 쪽도 같이 갱신 필요.
 add_library(NxCadCoreBase STATIC
     include/Core/Interfaces/IAssemblyReader.h
     include/Core/Interfaces/IGeometryReader.h
