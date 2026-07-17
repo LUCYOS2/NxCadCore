@@ -4,11 +4,13 @@
 
 #include <NXOpen/Session.hxx>
 #include <NXOpen/BasePart.hxx>
+#include <NXOpen/Part.hxx>
 #include <NXOpen/Body.hxx>
 #include <NXOpen/Face.hxx>
 #include <NXOpen/Edge.hxx>
 #include <NXOpen/NXException.hxx>
 #include <NXOpen/Assemblies/Component.hxx>
+#include <NXOpen/Assemblies/ComponentAssembly.hxx>
 
 #include "NxContracts/NxGeometryUtils.h"
 
@@ -40,29 +42,34 @@ namespace CadImport::NxBackend
             GeometryInfo geometryInfo;
             geometryInfo.componentName = componentName;
 
-            // Display-only summary pass over the Work Part's bodies. Bodies
-            // are filtered by owning component name.
-            //
-            // TODO(office-PC verify): Body::OwningComponent() is the
-            // expected NX Open accessor for "which assembly occurrence does
-            // this body belong to" - confirm the exact name against the
-            // installed Body.hxx. For a non-assembly (single-part) bookmark
-            // this filter is skipped and all bodies are reported instead.
-            std::vector<NXOpen::Body*> bodies = workPart->Bodies();
+            // The work part itself is typically an empty container in an
+            // assembly - each named Component's real Bodies live in the
+            // Part it instances, not in workPart directly (see
+            // NxContracts::CollectAllBodiesInWorkPart / docs/
+            // OfficeVerificationChecklist.md Phase 2-A). So: find the
+            // Component matching componentName and read only its own
+            // Bodies, rather than pulling every Body up front and filtering
+            // by Body::OwningComponent() (which assumed workPart->Bodies()
+            // already covered the whole assembly - it doesn't).
+            std::vector<NXOpen::Body*> bodies;
+            NXOpen::Part* part = dynamic_cast<NXOpen::Part*>(workPart);
+            NXOpen::Assemblies::ComponentAssembly* assembly = (part != nullptr) ? part->ComponentAssembly() : nullptr;
+            NXOpen::Assemblies::Component* root = (assembly != nullptr) ? assembly->RootComponent() : nullptr;
+
+            if (root != nullptr)
+            {
+                NXOpen::Assemblies::Component* match = NxContracts::FindComponentByName(root, componentName);
+                bodies = NxContracts::BodiesOfComponent(match);
+            }
+            else
+            {
+                // Non-assembly (single-part) bookmark - the work part IS
+                // the part with the actual geometry.
+                bodies = workPart->Bodies();
+            }
+
             for (NXOpen::Body* body : bodies)
             {
-                bool includeBody = true;
-                NXOpen::Assemblies::Component* owner = body->OwningComponent();
-                if (owner != nullptr)
-                {
-                    includeBody = (owner->Name() == componentName);
-                }
-
-                if (!includeBody)
-                {
-                    continue;
-                }
-
                 BodyInfo bodyInfo;
                 bodyInfo.bodyId = body->JournalIdentifier();
                 bodyInfo.faceCount = static_cast<int>(body->GetFaces().size());
