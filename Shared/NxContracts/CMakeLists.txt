@@ -13,4 +13,6 @@ target_include_directories(NxContracts PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/includ
 # include/NxContracts 자체도 검색 경로에 추가한다.
 target_include_directories(NxContracts PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/NxContracts)
 target_compile_features(NxContracts PUBLIC cxx_std_17)
-target_link_libraries(NxContracts PUBLIC NxOpenSdk)
+# NxGeometryUtils.h가 CadImport::Core::BoundingBox3D(Core/Models/BoundingBox3D.h)를
+# 쓰므로 NxCadCoreBase의 include 경로가 필요하다.
+target_link_libraries(NxContracts PUBLIC NxOpenSdk NxCadCoreBase)
