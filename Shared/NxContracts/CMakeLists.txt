@@ -8,5 +8,9 @@ add_library(NxContracts STATIC
 )
 
 target_include_directories(NxContracts PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# NxGeometryUtils.cpp가 자기 헤더를 "NxContracts/" 접두사 없이 "NxGeometryUtils.h"로
+# include하고 있어서(NxBackend 쪽 파일들과 스타일이 다름), 이 타겟 내부 컴파일에서만
+# include/NxContracts 자체도 검색 경로에 추가한다.
+target_include_directories(NxContracts PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/NxContracts)
 target_compile_features(NxContracts PUBLIC cxx_std_17)
 target_link_libraries(NxContracts PUBLIC NxOpenSdk)
