@@ -4,9 +4,19 @@
 #include <NXOpen/Body.hxx>
 #include <NXOpen/Part.hxx>
 #include <NXOpen/TaggedObject.hxx>
-#include <NXOpen/UF/UFSession.hxx>
 #include <NXOpen/Assemblies/Component.hxx>
 #include <NXOpen/Assemblies/ComponentAssembly.hxx>
+
+// TODO(office-PC verify, RESOLVED on this NX2406 install): this build has no
+// NXOpen::UF::UFSession C++ wrapper at all (UGOPEN has no NXOpen/UF/ folder) -
+// only the classic C UF Open API (uf.h/uf_modl.h) is available. Confirmed via
+// UGOPEN\uf_modl_utilities.h:514 - UF_MODL_ask_bounding_box(tag_t, double[6]).
+// NXOpen::Session must already have the UF layer active (no UF_initialize()
+// call here) - if this throws/returns nonzero at runtime claiming the session
+// isn't initialized, that assumption is wrong and needs an explicit
+// UF_initialize()/UF_terminate() pair around this call.
+#include <uf.h>
+#include <uf_modl.h>
 
 using namespace CadImport::Core;
 
@@ -23,9 +33,12 @@ namespace NxContracts
 
         try
         {
-            NXOpen::UF::UFSession* ufSession = NXOpen::UF::UFSession::GetUFSession();
             double range[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-            ufSession->Modl.AskBoundingBox(object->Tag(), range);
+            const int status = UF_MODL_ask_bounding_box(object->Tag(), range);
+            if (status != 0)
+            {
+                return box; // box.valid stays false
+            }
 
             box.min = { range[0], range[1], range[2] };
             box.max = { range[3], range[4], range[5] };
